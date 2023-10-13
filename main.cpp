@@ -18,7 +18,7 @@ int main() {
 
     while (true) {
         auto start_time = std::chrono::high_resolution_clock::now();
-        std::string cmd = "python d:/random_run.py";
+        std::string cmd = "C://Users//24016//miniconda3//python.exe d://random_run.py";
         boost::process::child c(cmd, boost::process::std_out > boost::process::null, boost::process::std_err > boost::process::null);
 
         // 打印启动时间和进程ID
@@ -27,8 +27,10 @@ int main() {
         // 等待直到Python脚本退出
         while (true) {
             DWORD exitCode;
-            if (GetExitCodeProcess(c.native_handle(), &exitCode) && exitCode != STILL_ACTIVE) {
-                break;
+            if (GetExitCodeProcess(c.native_handle(), &exitCode)) {
+                if (exitCode != STILL_ACTIVE) {
+                    break;
+                }
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
