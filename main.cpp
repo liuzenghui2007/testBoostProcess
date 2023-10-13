@@ -5,6 +5,7 @@
 #include <thread>
 #include <csignal>
 #include <windows.h>
+#include <iomanip>  // 用于格式化日期和时间
 
 volatile sig_atomic_t pythonExited = false;
 
@@ -21,8 +22,16 @@ int main() {
         std::string cmd = "C://Users//24016//miniconda3//python.exe d://random_run.py";
         boost::process::child c(cmd, boost::process::std_out > boost::process::null, boost::process::std_err > boost::process::null);
 
-        // 打印启动时间和进程ID
-        std::cout << "Started Python script with PID: " << c.id() << " at " << start_time.time_since_epoch().count() << std::endl;
+        // 获取当前时间并格式化为带有年月日时分秒的字符串
+        auto now = std::chrono::system_clock::now();  // 使用系统时钟
+        auto now_c = std::chrono::system_clock::to_time_t(now);  // 转换为time_t
+        struct tm timeinfo;
+        localtime_s(&timeinfo, &now_c);
+        char time_str[20];
+        strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", &timeinfo);
+
+        // 打印启动时间、进程ID和PID
+        std::cout << "Started Python script with PID: " << c.id() << " at " << time_str << std::endl;
 
         // 等待直到Python脚本退出
         while (true) {
