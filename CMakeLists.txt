@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-
+# can only run in qt creator
 # For Windows
 if (WIN32)
     message(STATUS windows system)
