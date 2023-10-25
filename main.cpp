@@ -6,7 +6,9 @@
 #include <csignal>
 #include <windows.h>
 #include <iomanip>
-#include <fstream>  // 添加文件流操作头文件
+#include <fstream>
+#include <boost/iostreams/tee.hpp>
+#include <boost/iostreams/stream.hpp>
 
 volatile sig_atomic_t processExited = false;
 
@@ -28,13 +30,16 @@ int main() {
     // 创建文件并打开以写入内容
     std::ofstream outputFile(time_str + std::string(".txt"));
 
+    // 创建一个tee_device，将输出分别传递到std::cout和文件
+    boost::iostreams::tee_device<std::ostream, std::ofstream> tee_out(std::cout, outputFile);
+    boost::iostreams::stream<boost::iostreams::tee_device<std::ostream, std::ofstream>> out(tee_out);
+
     while (true) {
         auto start_time = std::chrono::high_resolution_clock::now();
         std::string cmd = "./test.exe";
-        boost::process::child c(cmd, boost::process::std_out > boost::process::null, boost::process::std_err > boost::process::null);
-
+             boost::process::child c(cmd, boost::process::std_out > boost::process::null, boost::process::std_err > boost::process::null);
         // 打印启动时间、进程ID和PID
-        outputFile << "Started process with PID: " << c.id() << " at " << time_str << std::endl;
+        out << "Started process with PID: " << c.id() << " at " << time_str << std::endl;
 
         // 等待直到process脚本退出
         while (true) {
@@ -50,14 +55,12 @@ int main() {
         // process脚本退出后的处理
         auto end_time = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time);
-        outputFile << "process ran for " << duration.count() << " seconds." << std::endl;
+        out << "process ran for " << duration.count() << " seconds." << std::endl;
 
         // 检查process脚本是否已退出
         if (processExited) {
-            outputFile << "process has exited." << std::endl;
+            out << "process has exited." << std::endl;
         }
-
-
 
         // 暂停一段时间，然后继续下一轮循环
         std::this_thread::sleep_for(std::chrono::seconds(5)); // 为了演示目的，这里暂停5秒
