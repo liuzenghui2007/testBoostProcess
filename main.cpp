@@ -34,6 +34,7 @@ int main() {
         boost::process::child c(cmd, boost::process::std_out > boost::process::null, boost::process::std_err > boost::process::null);
 
         // 打印启动时间、进程ID和PID
+        std::cout << "Started process with PID: " << c.id() << " at " << time_str << std::endl;
         outputFile << "Started process with PID: " << c.id() << " at " << time_str << std::endl;
 
         // 等待直到process脚本退出
@@ -50,6 +51,7 @@ int main() {
         // process脚本退出后的处理
         auto end_time = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time);
+        std::cout <<  "process ran for " << duration.count() << " seconds." << std::endl;
         outputFile << "process ran for " << duration.count() << " seconds." << std::endl;
 
         // 检查process脚本是否已退出
